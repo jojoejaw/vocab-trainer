@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import SpeakButton from "@/components/words/SpeakButton";
 import { DeleteContextButton, DeleteWordButton } from "@/components/words/DeleteButtons";
+import { Highlight } from "@/components/words/Highlight";
 import { getWord } from "@/lib/words-data";
 import { tagNames, wordStatus } from "@/lib/words";
 
@@ -19,18 +20,6 @@ export default function WordPage({ params }: PageProps<"/words/[id]">) {
 }
 
 const directionLabel = { en_to_th: "อังกฤษ → ความหมาย", th_to_en: "ไทย → อังกฤษ" };
-
-function highlight(sentence: string, term: string) {
-  const i = sentence.toLowerCase().indexOf(term.toLowerCase());
-  if (i < 0) return sentence;
-  return (
-    <>
-      {sentence.slice(0, i)}
-      <mark className="rounded bg-[#fde8c8] px-0.5 font-semibold text-ink">{sentence.slice(i, i + term.length)}</mark>
-      {sentence.slice(i + term.length)}
-    </>
-  );
-}
 
 async function WordDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -96,7 +85,7 @@ async function WordDetail({ params }: { params: Promise<{ id: string }> }) {
             {contexts.map((c) => (
               <div key={c.id} className="flex items-start gap-2 border-b border-line-soft p-4 last:border-b-0">
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="text-[15px] leading-relaxed">{highlight(c.sentence, word.term)}</p>
+                  <p className="text-[15px] leading-relaxed"><Highlight sentence={c.sentence} term={word.term} /></p>
                   <span className="text-xs text-muted">
                     {c.is_ai_generated ? "AI แต่ง" : c.source_title ? `ที่มา: ${c.source_title}` : "จากเอกสาร"}
                   </span>

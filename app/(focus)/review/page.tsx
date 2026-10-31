@@ -1,14 +1,21 @@
+import { Suspense } from "react";
 import PageHeader from "@/components/layout/PageHeader";
+import ReviewSession from "@/components/review/ReviewSession";
+import { getReviewQueue } from "@/lib/review-data";
 
 export default function ReviewPage() {
   return (
     <>
       <PageHeader title="ทบทวน" />
-      <main className="flex flex-1 flex-col px-5 pb-7">
-        <div className="flex flex-1 items-center justify-center rounded-3xl border border-line bg-card p-6 text-center text-muted">
-          สัปดาห์ 3: Flashcard 2 ทิศ + ให้คะแนนด้วย FSRS
-        </div>
-      </main>
+      <Suspense fallback={<p className="px-5 text-muted">กำลังโหลดการ์ด…</p>}>
+        <Session />
+      </Suspense>
     </>
   );
+}
+
+// อ่านข้อมูลผู้ใช้ จึงต้องอยู่ใน Suspense (Cache Components)
+async function Session() {
+  const queue = await getReviewQueue();
+  return <ReviewSession initial={queue.cards} />;
 }
