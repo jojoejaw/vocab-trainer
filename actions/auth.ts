@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error?: string; message?: string };
 
+// แอปใช้คนเดียว: ปิดการสมัครไว้ เปิดชั่วคราวด้วย ALLOW_SIGNUP=true ใน .env.local
+const signupAllowed = () => process.env.ALLOW_SIGNUP === "true";
+
 function readForm(formData: FormData) {
   return {
     email: String(formData.get("email") ?? "").trim(),
@@ -25,6 +28,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
 }
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  if (!signupAllowed()) return { error: "ปิดการสมัครสมาชิกอยู่" };
   const { email, password } = readForm(formData);
   if (!email || password.length < 8) {
     return { error: "กรอกอีเมล และรหัสผ่านอย่างน้อย 8 ตัวอักษร" };
@@ -37,7 +41,12 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     password,
     options: { emailRedirectTo: `${origin}/auth/callback` },
   });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("signUp failed", error.code, error.message);
+    if (error.code === "user_already_exists") return { error: "อีเมลนี้สมัครไว้แล้ว" };
+    if (error.code === "weak_password") return { error: "รหัสผ่านง่ายเกินไป" };
+    return { error: "สมัครไม่สำเร็จ ลองใหม่อีกครั้ง" };
+  }
 
   // ถ้าปิด "Confirm email" ใน Supabase จะได้ session ทันที
   if (data.session) redirect("/");

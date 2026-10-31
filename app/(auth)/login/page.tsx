@@ -10,7 +10,7 @@ export default function LoginPage() {
       </div>
 
       {isSupabaseConfigured() ? (
-        <LoginForm />
+        <LoginForm allowSignup={process.env.ALLOW_SIGNUP === "true"} />
       ) : (
         <div className="rounded-2xl border border-line bg-card p-5 leading-relaxed">
           <h2 className="mb-2 text-lg font-semibold">ยังไม่ได้เชื่อม Supabase</h2>

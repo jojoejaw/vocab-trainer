@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { signIn, signUp, type AuthState } from "@/actions/auth";
 
-export default function LoginForm() {
+export default function LoginForm({ allowSignup }: { allowSignup: boolean }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [state, action, pending] = useActionState<AuthState, FormData>(
     mode === "signin" ? signIn : signUp,
@@ -38,13 +38,15 @@ export default function LoginForm() {
         {pending ? "กำลังดำเนินการ…" : mode === "signin" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
       </button>
 
-      <button
-        type="button"
-        onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-        className="h-11 text-brand"
-      >
-        {mode === "signin" ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ"}
-      </button>
+      {allowSignup && (
+        <button
+          type="button"
+          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          className="h-11 text-brand"
+        >
+          {mode === "signin" ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ"}
+        </button>
+      )}
     </form>
   );
 }
