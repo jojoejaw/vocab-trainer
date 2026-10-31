@@ -117,4 +117,4 @@ function geminiSchema() {
   return schema;
 }
 
-const shorten =(s: string) => (s.length > 160 ? `${s.slice(0, 160)}…` : s);
+const shorten = (s: string) => (s.length > 160 ? `${s.slice(0, 160)}…` : s);

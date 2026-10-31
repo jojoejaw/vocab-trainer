@@ -161,28 +161,49 @@ export async function updateWord(wordId: string, input: WordInput): Promise<Save
   const { error } = await supabase.from("words").update(fields).eq("id", wordId);
   if (error) return { ok: false, error: "บันทึกไม่สำเร็จ" };
 
-  const tagIds = await resolveTagIds(supabase, input.tags);
-  await supabase.from("word_tags").delete().eq("word_id", wordId);
-  if (tagIds.length > 0) {
-    await supabase.from("word_tags").insert(tagIds.map((tag_id) => ({ word_id: wordId, tag_id })));
+  try {
+    const tagIds = await resolveTagIds(supabase, input.tags);
+    const { error: delError } = await supabase.from("word_tags").delete().eq("word_id", wordId);
+    if (delError) throw delError;
+    if (tagIds.length > 0) {
+      const { error: tagError } = await supabase
+        .from("word_tags")
+        .insert(tagIds.map((tag_id) => ({ word_id: wordId, tag_id })));
+      if (tagError) throw tagError;
+    }
+  } catch (err) {
+    // ตัวคำบันทึกแล้ว แต่ tag อาจไม่ครบ ให้ผู้ใช้กดบันทึกซ้ำ
+    console.error("updateWord tags failed", err);
+    revalidatePath("/", "layout");
+    return { ok: false, error: "บันทึกคำแล้ว แต่บันทึก tag ไม่สำเร็จ กดบันทึกอีกครั้ง" };
   }
 
   revalidatePath("/", "layout");
   return { ok: true, id: wordId };
 }
 
-export async function deleteContext(contextId: string, wordId: string) {
+export type DeleteResult = { error: string } | undefined;
+
+export async function deleteContext(contextId: string, wordId: string): Promise<DeleteResult> {
   const supabase = await createClient();
   await requireUser(supabase);
-  await supabase.from("contexts").delete().eq("id", contextId);
+  const { error } = await supabase.from("contexts").delete().eq("id", contextId);
+  if (error) {
+    console.error("deleteContext failed", error);
+    return { error: "ลบประโยคไม่สำเร็จ" };
+  }
   revalidatePath(`/words/${wordId}`);
 }
 
 // F4: ลบคำ (การ์ด ประโยค และประวัติการทบทวนลบตามด้วย cascade)
-export async function deleteWord(wordId: string) {
+export async function deleteWord(wordId: string): Promise<DeleteResult> {
   const supabase = await createClient();
   await requireUser(supabase);
-  await supabase.from("words").delete().eq("id", wordId);
+  const { error } = await supabase.from("words").delete().eq("id", wordId);
+  if (error) {
+    console.error("deleteWord failed", error);
+    return { error: "ลบคำไม่สำเร็จ ลองใหม่อีกครั้ง" };
+  }
   revalidatePath("/", "layout");
   redirect("/words");
 }
