@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* สีและฟอนต์ตาม Mockup */
+@theme inline {
+  --color-page: #f5f6f8;
+  --color-card: #ffffff;
+  --color-ink: #0f1b2d;
+  --color-muted: #5b6576;
+  --color-line: #e3e6eb;
+  --color-line-soft: #eef0f3;
+  --color-field: #c5cbd3;
+  --color-brand: #1d4ed8;
+  --color-brand-dark: #1e3a8a;
+  --color-brand-soft: #e8eefd;
+  --color-danger: #b42318;
+  --font-sans: var(--font-plex-thai), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+}
