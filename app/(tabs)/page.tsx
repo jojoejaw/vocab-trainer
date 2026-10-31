@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import WordListItem from "@/components/words/WordListItem";
+import { listWords } from "@/lib/words-data";
+import { wordStatus } from "@/lib/words";
 
 export default function HomePage() {
   return (
@@ -52,12 +55,33 @@ export default function HomePage() {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="text-[17px] font-semibold">เพิ่มล่าสุด</h2>
-        <div className="rounded-2xl border border-line bg-card p-5 text-center text-muted">
-          ยังไม่มีคำ กดปุ่ม “เพิ่มคำ” เพื่อเริ่ม
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-[17px] font-semibold">เพิ่มล่าสุด</h2>
+          <Link href="/words" className="text-sm text-brand">ดูทั้งหมด</Link>
         </div>
+        <Suspense fallback={<div className="h-24 rounded-2xl border border-line bg-card" />}>
+          <RecentWords />
+        </Suspense>
       </section>
     </main>
+  );
+}
+
+async function RecentWords() {
+  const words = (await listWords()).slice(0, 3);
+  if (words.length === 0) {
+    return (
+      <div className="rounded-2xl border border-line bg-card p-5 text-center text-muted">
+        ยังไม่มีคำ กดปุ่ม “เพิ่มคำ” เพื่อเริ่ม
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col rounded-2xl border border-line bg-card">
+      {words.map((w) => (
+        <WordListItem key={w.id} id={w.id} term={w.term} meaning={w.meaning_th} status={wordStatus(w.cards)} />
+      ))}
+    </div>
   );
 }
 

@@ -1,14 +1,20 @@
+import { Suspense } from "react";
 import PageHeader from "@/components/layout/PageHeader";
+import WordForm from "@/components/words/WordForm";
+import { listTagNames } from "@/lib/words-data";
 
 export default function NewWordPage() {
   return (
     <>
       <PageHeader title="เพิ่มคำ" />
-      <main className="flex flex-col gap-4 px-5 pb-7">
-        <div className="rounded-2xl border border-line bg-card p-5 text-center text-muted">
-          สัปดาห์ 2: ฟอร์มเพิ่มคำ + AI เติมข้อมูล
-        </div>
-      </main>
+      <Suspense fallback={<p className="px-5 text-muted">กำลังโหลด…</p>}>
+        <NewWordForm />
+      </Suspense>
     </>
   );
+}
+
+async function NewWordForm() {
+  const tags = await listTagNames();
+  return <WordForm mode="new" existingTags={tags} />;
 }
